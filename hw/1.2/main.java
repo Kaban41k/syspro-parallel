@@ -59,4 +59,4 @@ class B extends Thread {
 // (2) B.5 is x = 2 always after (1).
 // Then for x == 1 A.5 with y == 0 always happened after (2), because of x == 2 after (2).
 // !!!But A.5 already earlier than B.4!!!
-// Conflict
+// Conflict of z == 1 and x == 1
