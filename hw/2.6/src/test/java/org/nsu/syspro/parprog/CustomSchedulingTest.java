@@ -51,14 +51,11 @@ public class CustomSchedulingTest extends TestLevels {
 
     static final class SlowPhilosopher extends DefaultPhilosopher {
         @Override
-        public void onHungry(Fork left, Fork right) {
+        public void countMeal() {
             if (this.id == 1) {
-                left.acquire();
-                right.acquire();
-                sleepMillis(1000);
-                right.release();
-                left.release();
-            } else super.onHungry(left, right);
+                sleepSeconds(1);
+            }
+            super.countMeal();
         }
     }
 
@@ -113,7 +110,7 @@ public class CustomSchedulingTest extends TestLevels {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {3, 4, 5})
+    @ValueSource(ints = {2, 3, 4, 5})
     @Timeout(2)
     void testSingleSlow(int N) {
         final SlowTable table = dine(new SlowTable(N), 1);
