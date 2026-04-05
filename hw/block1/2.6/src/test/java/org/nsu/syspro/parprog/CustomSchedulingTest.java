@@ -10,6 +10,8 @@ import org.nsu.syspro.parprog.examples.DefaultPhilosopher;
 import org.nsu.syspro.parprog.helpers.TestLevels;
 import org.nsu.syspro.parprog.interfaces.Fork;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class CustomSchedulingTest extends TestLevels {
 
     static final class CustomizedPhilosopher extends DefaultPhilosopher {
@@ -47,11 +49,79 @@ public class CustomSchedulingTest extends TestLevels {
         }
     }
 
+    static final class SlowPhilosopher extends DefaultPhilosopher {
+        @Override
+        public void countMeal() {
+            if (this.id == 1) {
+                sleepSeconds(1);
+            }
+            super.countMeal();
+        }
+    }
+
+    static final class SlowTable extends DiningTable<SlowPhilosopher, DefaultFork> {
+        public SlowTable(int N) {
+            super(N);
+        }
+
+        @Override
+        public DefaultFork createFork() {
+            return new DefaultFork();
+        }
+
+        @Override
+        public SlowPhilosopher createPhilosopher() {
+            return new SlowPhilosopher();
+        }
+    }
+
+    static final class OddSlowPhilosopher extends DefaultPhilosopher {
+        @Override
+        public void countMeal() {
+            if (this.id % 2 == 0) {
+                sleepMillis(10);
+            } else sleepMillis(100);
+            super.countMeal();
+        }
+    }
+
+    static final class OddSlowTable extends DiningTable<OddSlowPhilosopher, DefaultFork> {
+        public OddSlowTable(int N) {
+            super(N);
+        }
+
+        @Override
+        public DefaultFork createFork() {
+            return new DefaultFork();
+        }
+
+        @Override
+        public OddSlowPhilosopher createPhilosopher() {
+            return new OddSlowPhilosopher();
+        }
+    }
+
     @EnabledIf("easyEnabled")
     @ParameterizedTest
     @ValueSource(ints = {2, 3, 4, 5})
     @Timeout(2)
     void testDeadlockFreedom(int N) {
         final CustomizedTable table = dine(new CustomizedTable(N), 1);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {2, 3, 4, 5})
+    @Timeout(2)
+    void testSingleSlow(int N) {
+        final SlowTable table = dine(new SlowTable(N), 1);
+        assertTrue(table.maxMeals() >= 1000);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {2, 3, 4, 5})
+    @Timeout(2)
+    void testWeakFairness(int N) {
+        final OddSlowTable table = dine(new OddSlowTable(N), 1);
+        assertTrue(table.minMeals() > 0); // every philosopher eat at least once
     }
 }
